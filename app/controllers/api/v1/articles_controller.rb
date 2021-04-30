@@ -1,59 +1,38 @@
-# frozen_string_literal: true
-
-class ArticlesController < ApplicationController
-  before_action :set_article, only: %i[show edit update destroy]
-
-  # GET /articles or /articles.json
+class Api::V1::ArticlesController < ApplicationController
+  before_action :set_article, only: %i[show update destroy]
+  # GET /articles
   def index
     @articles = Article.all
+    render json: @articles
   end
 
-  # GET /articles/1 or /articles/1.json
-  def show; end
-
-  # GET /articles/new
-  def new
-    @article = Article.new
+  # GET /articles/1
+  def show
+    render json: @article
   end
 
-  # GET /articles/1/edit
-  def edit; end
-
-  # POST /articles or /articles.json
+  # POST /articles
   def create
     @article = Article.new(article_params)
-
-    respond_to do |format|
-      if @article.save
-        format.html { redirect_to @article, notice: 'Article was successfully created.' }
-        format.json { render :show, status: :created, location: @article }
-      else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @article.errors, status: :unprocessable_entity }
-      end
+    if @article.save
+      render json: @article, status: :created, location: api_v1_article_url(@article)
+    else
+      render json: @article.errors, status: :unprocessable_entity
     end
   end
 
-  # PATCH/PUT /articles/1 or /articles/1.json
+  # PATCH/PUT /articles/1
   def update
-    respond_to do |format|
-      if @article.update(article_params)
-        format.html { redirect_to @article, notice: 'Article was successfully updated.' }
-        format.json { render :show, status: :ok, location: @article }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @article.errors, status: :unprocessable_entity }
-      end
+    if @article.update(article_params)
+      render json: @article
+    else
+      render json: @article.errors, status: :unprocessable_entity
     end
   end
 
-  # DELETE /articles/1 or /articles/1.json
+  # DELETE /articles/1
   def destroy
     @article.destroy
-    respond_to do |format|
-      format.html { redirect_to articles_url, notice: 'Article was successfully destroyed.' }
-      format.json { head :no_content }
-    end
   end
 
   private
@@ -63,7 +42,7 @@ class ArticlesController < ApplicationController
     @article = Article.find(params[:id])
   end
 
-  # Only allow a list of trusted parameters through.
+  # Only allow a trusted parameter “white list” through.
   def article_params
     params.require(:article).permit(:title, :content, :slug)
   end
